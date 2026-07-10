@@ -1,6 +1,6 @@
-# AI Agent 遊戲設計與實作規格
+# 花園守衛戰：AI Agent 遊戲設計與實作規格
 
-本文件是 AI coding agent 應把它視為主要實作依據，完成一款可直接部署至 GitHub Pages 的原創 3D 五路塔防網頁遊戲。
+本文件是《花園守衛戰 Garden Guardians》的產品、玩法、視覺與技術規格。AI coding agent 應把它視為主要實作依據，完成一款可直接部署至 GitHub Pages 的原創 3D 五路塔防網頁遊戲。
 
 ## 1. 產品目標
 

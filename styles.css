@@ -58,6 +58,10 @@ button:focus-visible, canvas:focus-visible { outline: 3px solid #fff; outline-of
 .intro-controls b { margin-right: 7px; color: #d9f173; }
 .primary-btn { margin-top: 16px; padding: 13px 24px; border: 0; border-radius: 5px; background: #d5ef6b; color: #17321f; font-weight: 950; cursor: pointer; box-shadow: 0 7px 0 #79982e, 0 14px 28px rgba(0,0,0,.35); }
 .primary-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.intro-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.sound-prompt { margin-top: 16px; padding: 11px 15px; border: 1px solid rgba(255,255,255,.28); border-radius: 5px; color: #f4f7dc; background: rgba(7,30,20,.72); cursor: pointer; box-shadow: 0 8px 22px rgba(0,0,0,.24); }
+.sound-prompt:hover { border-color: #d9f173; background: rgba(24,67,43,.88); }
+.sound-prompt.active { color: #17321f; border-color: #d9f173; background: #d9f173; }
 .result-panel { text-align: center; }
 
 dialog { position: fixed; z-index: 20; width: min(560px, calc(100vw - 32px)); padding: 28px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: #102d21; box-shadow: 0 30px 80px #000; }
@@ -104,6 +108,8 @@ footer { padding: 7px; color: #61786c; background: #091a13; text-align: center; 
   .intro-overlay { padding: 24px; background: rgba(4,17,12,.6); }
   .intro-copy h1 { font-size: 46px; }
   .intro-controls { margin-top: 14px; font-size: 10px; }
+  .intro-actions { gap: 8px; }
+  .sound-prompt { padding: 10px 12px; font-size: 12px; }
   .plant-deck { padding: 8px; min-height: 150px; flex-direction: column; gap: 6px; }
   .deck-title { width: auto; flex-direction: row; justify-content: space-between; }
   .shovel-btn { position: absolute; top: 5px; left: 112px; right: auto; width: 36px; height: 32px; font-size: 18px; }

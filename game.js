@@ -56,6 +56,7 @@ const ui = {
   progress: document.querySelector('#waveProgress'), cards: document.querySelector('#plantCards'),
   toast: document.querySelector('#toast'), pause: document.querySelector('#pauseBtn'),
   sound: document.querySelector('#soundBtn'), test: document.querySelector('#testBtn'),
+  introSound: document.querySelector('#introSoundBtn'),
   shovel: document.querySelector('#shovelBtn'), help: document.querySelector('#helpDialog'),
   bossBar: document.querySelector('#bossBar'), bossHealth: document.querySelector('#bossHealth'),
   sceneBackdrop: document.querySelector('#sceneBackdrop')
@@ -64,6 +65,8 @@ const ui = {
 let state;
 let lastTime = 0;
 let audioContext = null;
+let audioMaster = null;
+let audioUnlockPromise = null;
 let toastTimer = 0;
 let musicTimer = 0;
 let musicStep = 0;
@@ -113,14 +116,14 @@ function chooseRandomScene() {
   ui.sceneBackdrop.dataset.scene = scene.name;
 }
 
-function startGame() {
+async function startGame() {
   if (state.ended) resetGame();
+  await unlockAudio();
   state.running = true;
   state.paused = false;
   document.querySelector('#startOverlay').classList.add('hidden');
   document.querySelector('#resultOverlay').classList.add('hidden');
   canvas.focus();
-  ensureAudio();
   startMusic();
   sound('start');
   showToast('第一波夜行者正在靠近');
@@ -548,34 +551,78 @@ function showToast(message) {
   toastTimer = setTimeout(() => ui.toast.classList.remove('show'), 1900);
 }
 
-function ensureAudio() { if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)(); if (audioContext.state === 'suspended') audioContext.resume(); }
+function ensureAudio() {
+  if (audioContext) return audioContext;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return null;
+  audioContext = new AudioContextClass();
+  audioMaster = audioContext.createGain();
+  audioMaster.gain.value = .9;
+  audioMaster.connect(audioContext.destination);
+  audioContext.addEventListener('statechange', updateSoundUI);
+  return audioContext;
+}
+
+async function unlockAudio() {
+  const context = ensureAudio();
+  if (!context) return false;
+  if (context.state === 'running') { updateSoundUI(); return true; }
+  if (audioUnlockPromise) return audioUnlockPromise;
+
+  // iOS Safari 需要在使用者手勢中啟動一個來源，單獨 resume() 並不總是足夠。
+  const silentBuffer = context.createBuffer(1, 1, context.sampleRate);
+  const silentSource = context.createBufferSource();
+  silentSource.buffer = silentBuffer;
+  silentSource.connect(audioMaster);
+  silentSource.start(0);
+
+  audioUnlockPromise = context.resume()
+    .then(() => context.state === 'running')
+    .catch(() => false)
+    .finally(() => { audioUnlockPromise = null; updateSoundUI(); });
+  return audioUnlockPromise;
+}
+
+function updateSoundUI() {
+  const unlocked = audioContext?.state === 'running';
+  ui.sound.textContent = state.sound ? '♪' : '×';
+  ui.sound.setAttribute('aria-label', state.sound ? '關閉音效' : '開啟音效');
+  ui.sound.setAttribute('aria-pressed', String(state.sound && unlocked));
+  ui.introSound.classList.toggle('active', state.sound && unlocked);
+  ui.introSound.setAttribute('aria-pressed', String(state.sound && unlocked));
+  ui.introSound.textContent = state.sound && unlocked ? '♫ 首頁音樂播放中' : '♫ 點一下開啟首頁音樂';
+}
+
 function sound(kind) {
   if (!state.sound) return;
-  ensureAudio();
+  const context = ensureAudio();
+  if (!context || context.state !== 'running') return;
   const notes = { start: [392, .18], plant: [260, .08], shovel: [155, .12], sun: [740, .1], shoot: [180, .035], bite: [90, .04], pop: [120, .1], wave: [520, .2], boss: [72, .65], mower: [75, .3], hurt: [110, .25], deny: [130, .06], win: [660, .45], lose: [95, .5] };
   const [freq, duration] = notes[kind] || notes.plant;
-  const osc = audioContext.createOscillator(); const gain = audioContext.createGain();
-  osc.type = kind === 'shoot' ? 'square' : 'sine'; osc.frequency.setValueAtTime(freq, audioContext.currentTime);
-  if (kind === 'win') osc.frequency.exponentialRampToValueAtTime(990, audioContext.currentTime + duration);
-  gain.gain.setValueAtTime(.055, audioContext.currentTime); gain.gain.exponentialRampToValueAtTime(.001, audioContext.currentTime + duration);
-  osc.connect(gain).connect(audioContext.destination); osc.start(); osc.stop(audioContext.currentTime + duration);
+  const osc = context.createOscillator(); const gain = context.createGain();
+  osc.type = kind === 'shoot' ? 'square' : 'sine'; osc.frequency.setValueAtTime(freq, context.currentTime);
+  if (kind === 'win') osc.frequency.exponentialRampToValueAtTime(990, context.currentTime + duration);
+  gain.gain.setValueAtTime(.075, context.currentTime); gain.gain.exponentialRampToValueAtTime(.001, context.currentTime + duration);
+  osc.connect(gain).connect(audioMaster); osc.start(); osc.stop(context.currentTime + duration);
 }
 
 function startMusic() {
   if (musicTimer) return;
-  const melody = [196, 247, 294, 247, 220, 262, 330, 262, 196, 247, 294, 392, 330, 294, 247, 220];
+  const introMelody = [262, 330, 392, 330, 294, 349, 440, 349, 262, 330, 392, 494, 440, 392, 330, 294];
+  const gameMelody = [196, 247, 294, 247, 220, 262, 330, 262, 196, 247, 294, 392, 330, 294, 247, 220];
   musicTimer = window.setInterval(() => {
-    if (!state.sound || !state.running || state.paused || state.ended) return;
-    ensureAudio();
-    const now = audioContext.currentTime;
-    const osc = audioContext.createOscillator();
-    const gain = audioContext.createGain();
+    const context = audioContext;
+    if (!state.sound || state.paused || state.ended || !context || context.state !== 'running') return;
+    const melody = state.running ? gameMelody : introMelody;
+    const now = context.currentTime;
+    const osc = context.createOscillator();
+    const gain = context.createGain();
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(melody[musicStep % melody.length], now);
-    gain.gain.setValueAtTime(.018, now);
-    gain.gain.exponentialRampToValueAtTime(.001, now + .3);
-    osc.connect(gain).connect(audioContext.destination);
-    osc.start(now); osc.stop(now + .31);
+    gain.gain.setValueAtTime(state.running ? .026 : .018, now);
+    gain.gain.exponentialRampToValueAtTime(.001, now + (state.running ? .3 : .42));
+    osc.connect(gain).connect(audioMaster);
+    osc.start(now); osc.stop(now + (state.running ? .31 : .43));
     musicStep++;
   }, 360);
 }
@@ -592,7 +639,23 @@ document.querySelector('#startBtn').addEventListener('click', startGame);
 document.querySelector('#restartBtn').addEventListener('click', () => { resetGame(); startGame(); });
 ui.pause.addEventListener('click', togglePause);
 ui.shovel.addEventListener('click', toggleShovel);
-ui.sound.addEventListener('click', () => { state.sound = !state.sound; ui.sound.textContent = state.sound ? '♪' : '×'; ui.sound.setAttribute('aria-label', state.sound ? '關閉音效' : '開啟音效'); if (state.sound) sound('sun'); });
+ui.sound.addEventListener('click', async () => {
+  const unlocked = audioContext?.state === 'running';
+  if (state.sound && !unlocked) {
+    await unlockAudio();
+  } else {
+    state.sound = !state.sound;
+    if (state.sound) await unlockAudio();
+  }
+  updateSoundUI();
+  if (state.sound) sound('sun');
+});
+ui.introSound.addEventListener('click', async () => {
+  state.sound = true;
+  await unlockAudio();
+  updateSoundUI();
+  sound('sun');
+});
 ui.test.addEventListener('click', () => {
   state.testMode = !state.testMode;
   ui.test.classList.toggle('active', state.testMode);
@@ -641,4 +704,12 @@ function frame(time) {
 
 buildCards();
 resetGame();
+startMusic();
+updateSoundUI();
+
+// 行動瀏覽器禁止未經互動播放；第一次觸碰或按鍵時立即解鎖音訊。
+const unlockFromGesture = () => { if (state.sound) unlockAudio(); };
+document.addEventListener('pointerdown', unlockFromGesture, { capture: true });
+document.addEventListener('touchend', unlockFromGesture, { capture: true });
+document.addEventListener('keydown', unlockFromGesture, { capture: true });
 requestAnimationFrame(frame);
