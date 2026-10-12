@@ -217,9 +217,9 @@
 
 | 場景 | 檔案 |
 | --- | --- |
-| 月夜森林 | `assets/scenes/moonlit-forest.png` |
-| 秋日庭園 | `assets/scenes/autumn-garden.png` |
-| 海岸晨曦 | `assets/scenes/coastal-sunrise.png` |
+| 月夜森林 | `screenshots/moonlit-forest.png` |
+| 秋日庭園 | `screenshots/autumn-garden.png` |
+| 海岸晨曦 | `screenshots/coastal-sunrise.png` |
 
 ### 14.2 切換規則
 
@@ -427,11 +427,11 @@ plant/
 ├── README.md
 ├── DESIGN.md
 ├── .nojekyll
-├── assets/
-│   └── scenes/
-│       ├── moonlit-forest.png
-│       ├── autumn-garden.png
-│       └── coastal-sunrise.png
+├── screenshots/
+│   ├── guardians-in-battle.png
+│   ├── moonlit-forest.png
+│   ├── autumn-garden.png
+│   └── coastal-sunrise.png
 └── vendor/
     ├── three.module.js
     └── three.core.js
@@ -443,12 +443,12 @@ plant/
 - `styles.css`：所有 UI、分層、狀態與響應式設計。
 - `game.js`：遊戲資料、狀態機、輸入、波次、碰撞、音訊與 UI 更新。
 - `three-scene.js`：Renderer、攝影機、燈光、3D 模型、Mesh 同步、Raycaster。
-- `assets/scenes/`：不含格線與角色的隨機遠景。
+- `screenshots/`：遊戲截圖與不含格線、角色的隨機遠景。
 - `vendor/`：固定版本的 Three.js ES Modules。
 
 ## 25. GitHub Pages 要求
 
-- 所有路徑使用相對路徑，例如 `./three-scene.js` 或 `assets/scenes/file.png`。
+- 所有路徑使用相對路徑，例如 `./three-scene.js` 或 `screenshots/file.png`。
 - 不可依賴本機絕對路徑。
 - 不需要 Node.js Runtime、後端或資料庫。
 - 專案根目錄包含 `.nojekyll`。

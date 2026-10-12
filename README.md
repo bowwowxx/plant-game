@@ -14,7 +14,7 @@
 
 遊戲採用低多邊形 3D 美術風格，包含五路九格戰場、三波敵人、裝甲殭屍、Boss、推草機、背景音樂及完整的滑鼠、鍵盤與觸控操作。
 
-![遊戲截圖](1.png)
+![遊戲截圖](screenshots/guardians-in-battle.png)
 
 ## 遊戲內容
 
@@ -40,6 +40,10 @@
 - **月夜森林**：星空、月亮、松林、山脈與暖色庭園燈。
 - **秋日庭園**：夕陽、紅葉、山谷、石燈與遠方木橋。
 - **海岸晨曦**：海岸、島嶼、涼亭、岩壁與日出天空。
+
+| 月夜森林 | 秋日庭園 | 海岸晨曦 |
+| :---: | :---: | :---: |
+| ![月夜森林](screenshots/moonlit-forest.png) | ![秋日庭園](screenshots/autumn-garden.png) | ![海岸晨曦](screenshots/coastal-sunrise.png) |
 
 遠景圖片只負責場外環境；可玩草坪、植物、殭屍、Boss、光源與陰影仍由 Three.js 即時繪製，因此更換圖片不會影響格位、選取或遊戲操作。
 
@@ -123,7 +127,7 @@ plant/
 ├── styles.css         # 響應式版面與 UI 樣式
 ├── game.js            # 遊戲規則、波次與操作邏輯
 ├── three-scene.js     # Three.js 場景、3D 模型與動畫
-├── assets/            # 專案美術與概念素材
+├── screenshots/       # 遊戲截圖與隨機場景遠景
 ├── vendor/            # 專案內使用的 Three.js 模組
 └── .nojekyll          # GitHub Pages 靜態檔案設定
 ```

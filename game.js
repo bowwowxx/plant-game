@@ -8,9 +8,9 @@ const W = 1600;
 const H = 900;
 const world = createWorld(threeCanvas, W, H);
 const sceneBackdrops = [
-  { name: '月夜森林', file: 'assets/scenes/moonlit-forest.png' },
-  { name: '秋日庭園', file: 'assets/scenes/autumn-garden.png' },
-  { name: '海岸晨曦', file: 'assets/scenes/coastal-sunrise.png' }
+  { name: '月夜森林', file: 'screenshots/moonlit-forest.png' },
+  { name: '秋日庭園', file: 'screenshots/autumn-garden.png' },
+  { name: '海岸晨曦', file: 'screenshots/coastal-sunrise.png' }
 ];
 let lastSceneIndex = -1;
 const GRID = {
